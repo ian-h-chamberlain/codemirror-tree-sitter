@@ -22,7 +22,7 @@ import nushellWasm from "@lumis-sh/wasm-nushell/tree-sitter-nushell.wasm";
 import highlights from "./highlights";
 
 const log = {
-  enableDebug: true,
+  enableDebug: false,
 
   debug(...rest: any[]) {
     if (this.enableDebug) {

@@ -1,8 +1,9 @@
 import typescript from "@rollup/plugin-typescript";
 import { RollupWasmOptions, wasm } from "@rollup/plugin-wasm";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
 import { defineConfig, Plugin, TransformHook, TransformResult } from "rollup";
-import serve from "rollup-plugin-serve";
+import copy from "rollup-plugin-copy";
 
 function rawWasm(options?: RollupWasmOptions): Plugin {
   // This cast might become invalid if the plugin ever changes
@@ -52,15 +53,16 @@ export default () =>
           browser: true,
           extensions: [".mjs", ".js", ".json", ".node", ".wasm"],
         }),
+        // tbd if this is still needed?
         rawWasm({ targetEnv: "browser", publicPath: "dist/" }),
       ],
     },
     {
       input: ["demo/index.ts"],
       output: {
-        dir: "./demo/dist",
+        dir: "public",
         format: "iife",
-        sourcemap: true,
+        sourcemap: process.env.BUILD !== "production",
       },
       plugins: [
         typescript(),
@@ -68,7 +70,16 @@ export default () =>
           browser: true,
           extensions: [".mjs", ".js", ".json", ".node", ".wasm"],
         }),
-        rawWasm({ targetEnv: "browser", publicPath: "demo/dist/" }),
+        rawWasm({ targetEnv: "browser" }),
+        process.env.BUILD === "production" && terser(),
+        copy({
+          targets: [
+            {
+              src: "demo/index.html",
+              dest: "public",
+            },
+          ],
+        }),
       ],
     },
   ]);
