@@ -13,7 +13,11 @@ async function bootstrap() {
     parent: tgt,
     doc: `#!/usr/bin/env nu
 
-def fibonacci [n: int]: nothing -> list<int> {
+# Generate the fibonacci sequence
+@example "basic" { fib 5 } --result [0, 1, 1, 2, 3, 5]
+ def fibonacci [
+    n: int # How many numbers to generate.
+]: nothing -> list<int> {
     mut a = 0
     mut b = 1
     mut result = []

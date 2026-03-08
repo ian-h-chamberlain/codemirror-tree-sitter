@@ -4,11 +4,15 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 import { defineConfig, Plugin, TransformHook, TransformResult } from "rollup";
 import copy from "rollup-plugin-copy";
+import { glob } from "node:fs";
 
 export default () =>
   defineConfig([
     {
-      input: ["src/index.ts", "demo/index.ts"],
+      input: ["src/index.ts"],
+      watch: {
+        include: ["src/*.ts"],
+      },
       output: {
         dir: "dist",
         format: "es",
@@ -45,7 +49,11 @@ export default () =>
         process.env.BUILD === "production" && terser(),
         {
           buildStart() {
-            this.addWatchFile("demo/index.html");
+            const extraWatchFiles = ["demo/index.html", "dist/*.js"];
+            for (const pattern of extraWatchFiles) {
+              glob(pattern, (_, paths) => paths.forEach(this.addWatchFile));
+            }
+            extraWatchFiles.forEach(this.addWatchFile);
           },
         },
         copy({
