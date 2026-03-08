@@ -6,5 +6,5 @@
     "newLine": "lf",
     "moduleResolution": "node",
   },
-  "include": ["src/*.ts", "demo/demo.ts", "rollup.config.ts"],
+  "include": ["src/**/*.ts", "demo/*.ts", "rollup.config.ts"],
 }

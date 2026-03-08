@@ -1,25 +1,24 @@
 {
-  "name": "codemirror-lang-EXAMPLE",
+  "name": "codemirror-lang-nushell",
   "version": "0.1.0",
-  "description": "EXAMPLE language support for CodeMirror",
+  "description": "Nushell language support for CodeMirror",
   "scripts": {
     "test": "mocha test/test.js",
-    "prepare": "rollup --configPlugin @rollup/plugin-typescript --config rollup.config.ts ",
-    "watch": "rollup --configPlugin @rollup/plugin-typescript --config rollup.config.ts --watch"
+    "build": "rollup --configPlugin @rollup/plugin-typescript --config rollup.config.ts",
+    "watch": "rollup --configPlugin @rollup/plugin-typescript --config rollup.config.ts --watch",
+    "clean": "rm -rf dist demo/dist",
+    "prepack": "npm run build"
   },
   "type": "module",
-  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "exports": {
-    "import": "./dist/index.js",
-    "require": "./dist/index.cjs"
+    "import": "./dist/index.js"
   },
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
     "@codemirror/language": "^6.0.0",
     "@lezer/highlight": "^1.0.0",
-    "@lezer/lr": "^1.0.0",
     "@lumis-sh/wasm-nushell": "^0.0.1-rev.bb3f533e",
     "web-tree-sitter": "^0.26.6"
   },

@@ -1,5 +1,6 @@
-/src
-/test
-/node_modules
-rollup.config.js
-tsconfig.json
+*
+!dist/*.js
+!dist/*.wasm
+!package.json
+!README.md
+!LICENSE

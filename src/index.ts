@@ -2,7 +2,6 @@ import {
   Language as CMLanguage,
   defineLanguageFacet,
   LanguageSupport,
-  LRLanguage,
 } from "@codemirror/language";
 import {
   Input,
@@ -14,7 +13,7 @@ import {
   Tree,
   TreeFragment,
 } from "@lezer/common";
-import { styleTags, tags as t } from "@lezer/highlight";
+import { styleTags } from "@lezer/highlight";
 import { Parser as TSParser, Language as TSLanguage } from "web-tree-sitter";
 
 import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
