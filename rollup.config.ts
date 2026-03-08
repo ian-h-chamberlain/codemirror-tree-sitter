@@ -5,35 +5,6 @@ import terser from "@rollup/plugin-terser";
 import { defineConfig, Plugin, TransformHook, TransformResult } from "rollup";
 import copy from "rollup-plugin-copy";
 
-function rawWasm(options?: RollupWasmOptions): Plugin {
-  // This cast might become invalid if the plugin ever changes
-  const wasmPlugin = wasm(options) as { transform: TransformHook };
-  if (!wasmPlugin.transform) {
-    throw new Error("no transform registered on wasm plugin");
-  }
-
-  return {
-    name: "rawWasm",
-    ...wasmPlugin,
-    transform(code, id): TransformResult {
-      const result = wasmPlugin.transform.bind(this)(code, id);
-
-      // hacky but meh
-      if (typeof result !== "object" || !result?.code) return;
-      const lines = result.code.split("\n");
-      for (let i = 0; i < lines.length; i++) {
-        if (lines[i].includes("import { _loadWasmModule }")) {
-          lines[i] = `function _loadWasmModule(sync, filepath, src, imports) {
-              return { sync, filepath, src, imports };
-            }`;
-        }
-      }
-      result.code = lines.join("\n");
-      return result;
-    },
-  };
-}
-
 export default () =>
   defineConfig([
     {
@@ -72,6 +43,11 @@ export default () =>
         }),
         rawWasm({ targetEnv: "browser" }),
         process.env.BUILD === "production" && terser(),
+        {
+          buildStart() {
+            this.addWatchFile("demo/index.html");
+          },
+        },
         copy({
           targets: [
             {
@@ -83,3 +59,32 @@ export default () =>
       ],
     },
   ]);
+
+function rawWasm(options?: RollupWasmOptions): Plugin {
+  // This cast might become invalid if the plugin ever changes
+  const wasmPlugin = wasm(options) as { transform: TransformHook };
+  if (!wasmPlugin.transform) {
+    throw new Error("no transform registered on wasm plugin");
+  }
+
+  return {
+    name: "rawWasm",
+    ...wasmPlugin,
+    transform(code, id): TransformResult {
+      const result = wasmPlugin.transform.bind(this)(code, id);
+
+      // hacky but meh
+      if (typeof result !== "object" || !result?.code) return;
+      const lines = result.code.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].includes("import { _loadWasmModule }")) {
+          lines[i] = `function _loadWasmModule(sync, filepath, src, imports) {
+                return { sync, filepath, src, imports };
+              }`;
+        }
+      }
+      result.code = lines.join("\n");
+      return result;
+    },
+  };
+}

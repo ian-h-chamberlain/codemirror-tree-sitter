@@ -1,11 +1,102 @@
 <!doctype html>
 <html>
     <head>
-        <title>CodeMirror Nu</title>
+        <title>Nushell CodeMirror Highlight Demo</title>
         <script defer type="text/javascript" src="./index.js"></script>
+        <style>
+            body {
+                font-family:
+                    system-ui,
+                    -apple-system,
+                    BlinkMacSystemFont,
+                    "Segoe UI",
+                    Roboto,
+                    Oxygen,
+                    Ubuntu,
+                    Cantarell,
+                    "Open Sans",
+                    "Helvetica Neue",
+                    sans-serif;
+            }
+
+            .row {
+                display: flex;
+                gap: 30px;
+            }
+
+            .column-left {
+                flex: 50%;
+            }
+            .column-right {
+                flex: 40%;
+            }
+
+            #editor_target {
+                border: 2px black solid;
+            }
+
+            .cm-content,
+            .cm-gutters,
+            .cm-content {
+                min-height: 500px !important;
+            }
+            .cm-content {
+                min-width: 420px;
+            }
+            .cm-scroller {
+                overflow: auto;
+            }
+            .cm-wrap {
+                border: 1px solid black;
+            }
+        </style>
     </head>
 
     <body>
-        <div id="editor"><div id="editor_target"></div></div>
+        <div class="row">
+            <div id="editor" class="column-left">
+                <div id="editor_target"></div>
+            </div>
+
+            <div class="column-right">
+                <h2>Nushell CodeMirror Highlight Demo</h2>
+                This uses
+                <ul>
+                    <li>
+                        A basic
+                        <a href="https://codemirror.net">CodeMirror 6</a> editor
+                    </li>
+                    <li>
+                        <a href="https://github.com/nushell/tree-sitter-nu"
+                            >tree-sitter-nu</a
+                        >
+                        <ul>
+                            <li>
+                                prebuilt to WASM by
+                                <a
+                                    href="https://npmx.dev/package/@lumis-sh/wasm-nushell"
+                                    >@lumis-sh</a
+                                >
+                                because I'm lazy
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        a bit of glue code to convert tree-sitter types to
+                        <a href="https://lezer.codemirror.net/">Lezer</a> types
+                    </li>
+                </ul>
+
+                Note that you can't actually run anything here, all the
+                highlighting happens locally in your browser!
+                <br />
+                <br />
+                Check out the
+                <a
+                    href="https://github.com/ian-h-chamberlain/codemirror-lang-nushell"
+                    >source code</a
+                >.
+            </div>
+        </div>
     </body>
 </html>
