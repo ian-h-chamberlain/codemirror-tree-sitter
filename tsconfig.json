@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "es6",
-    "module": "es2020",
+    "target": "es2017",
+    "module": "es2022",
     "newLine": "lf",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
   },
-  "include": ["src/*.ts"]
+  "include": ["src/*.ts", "demo/demo.ts", "rollup.config.ts"],
 }
