@@ -13,7 +13,7 @@ import {
   Tree,
   TreeFragment,
 } from "@lezer/common";
-import { styleTags } from "@lezer/highlight";
+import { styleTags, Tag } from "@lezer/highlight";
 import { Parser as TSParser, Language as TSLanguage } from "web-tree-sitter";
 
 import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
@@ -37,11 +37,12 @@ const log = {
 
 class Parser extends LezerParser {
   tsParser: TSParser;
-  props: NodePropSource[];
 
-  constructor(tsLanguage: TSLanguage, props: NodePropSource[]) {
+  constructor(
+    tsLanguage: TSLanguage,
+    public props: NodePropSource[],
+  ) {
     super();
-    this.props = props;
     this.tsParser = new TSParser();
     this.tsParser.setLanguage(tsLanguage);
   }
@@ -92,6 +93,7 @@ class Parser extends LezerParser {
         log.debug(
           `parsed ${input.length} bytes into tree, ranges:`,
           tsTree.getIncludedRanges(),
+          "\n" + prettyPrintTree(tsTree.rootNode.toString()),
         );
 
         const buffer = [];
@@ -129,7 +131,8 @@ class Parser extends LezerParser {
 
         try {
           log.debug(
-            `converted result to lezer tree of length ${tree.length}: ${tree}`,
+            `converted result to lezer tree of length ${tree.length}\n`,
+            prettyPrintTree(tree.toString()),
           );
         } catch (err) {
           // this can fail if there are certain anonymous node types I guess?
@@ -140,6 +143,38 @@ class Parser extends LezerParser {
       }
     })();
   }
+}
+
+// Dumb simple reformatter for parse trees, operates on s-expr strings so it
+// works for both types of tree, and doesn't try to be too clever
+function prettyPrintTree(s: string): string {
+  const tab = "  ";
+  let indent = 0;
+  let resultLines: string[] = [];
+  let inStr = false;
+
+  for (const c of s) {
+    if (!inStr) {
+      if (c === "(") {
+        resultLines.push(tab.repeat(indent));
+        indent++;
+      } else if (c === ")") {
+        indent--;
+      }
+    }
+
+    if (c === '"') {
+      inStr = !inStr;
+    }
+
+    if (c === "," && !inStr) {
+      resultLines[resultLines.length - 1] += " ";
+    } else {
+      resultLines[resultLines.length - 1] += c;
+    }
+  }
+
+  return resultLines.join("\n");
 }
 
 export async function nushellLanguage(): Promise<CMLanguage> {
