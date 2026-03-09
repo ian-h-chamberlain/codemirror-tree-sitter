@@ -20,31 +20,54 @@ import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
 import nushellWasm from "@lumis-sh/wasm-nushell/tree-sitter-nushell.wasm";
 
 import highlights from "./highlights";
+import { captureRejectionSymbol } from "node:stream";
 
-const log = {
-  enableDebug: false,
+//#region Adapter
 
-  debug(...rest: any[]) {
-    if (this.enableDebug) {
-      console.log(...rest);
-    }
-  },
+export class TreeSitterAdapter extends LezerParser {
+  parser: TSParser;
 
-  error(...rest: any[]) {
-    console.error(...rest);
-  },
-};
-
-class Parser extends LezerParser {
-  tsParser: TSParser;
-
+  // bleh, this is a super long docstring and I don't love it but wanted to write some notes;
+  /**
+   * @param fields the names of fields to generate psuedonodes for when  translating
+   *    from tree-sitter to Lezer. The generated nodes will have names like `foo:` for
+   *    a field named `foo`.
+   *
+   *    The resulting parser can use a style rule like `parent/foo:/bar` to simulate a
+   *    tree-sitter query like `(parent foo: (bar) @bar)`.
+   *
+   *    Note that due to the presence of these pseudonodes, style rules must *always*
+   *    include them, e.g. `parent/bar` will not match if the `foo` field was specified.
+   *
+   * @param textMatches for each key, generate additional pseudonode types for
+   *    the given strings, which will be output if the node's text content matches.
+   *    The generated nodes will have names like `'foo'` for a given string `"foo"`.
+   *
+   *    The resulting parser can use a style rule like `foo/'bar'` to simulate a tree-sitter
+   *    query like `((foo) @foo (#eq? @foo "bar"))`
+   *
+   * @example
+   *    import { tags } from "@lezer/highlight";
+   *
+   *    const parser = new Parser({
+   *        pseudoNodes: {
+   *            fields: { parent: ["a"] },
+   *            textMatches: { bar: ["baz"] },
+   *        },
+   *        props: [styleTags({
+   *          "parent/a:/*": tags.typeName,
+   *          "parent/bar/'baz'": tags.string,
+   *        })]
+   *    })
+   */
   constructor(
-    tsLanguage: TSLanguage,
-    public props: NodePropSource[],
+    language: TSLanguage,
+    private props: NodePropSource[] = [],
+    private pseudoNodes: { [node: string]: PseudoNodes | undefined } = {},
   ) {
     super();
-    this.tsParser = new TSParser();
-    this.tsParser.setLanguage(tsLanguage);
+    this.parser = new TSParser();
+    this.parser.setLanguage(language);
   }
 
   createParse(
@@ -52,7 +75,7 @@ class Parser extends LezerParser {
     _fragments: readonly TreeFragment[],
     _ranges: readonly { from: number; to: number }[],
   ): PartialParse {
-    const parser = this.tsParser;
+    const { parser, pseudoNodes } = this;
 
     // TODO: figure out a way to map TS fields -> node props?
     // https://tree-sitter.github.io/tree-sitter/creating-parsers/3-writing-the-grammar.html#using-fields
@@ -64,9 +87,13 @@ class Parser extends LezerParser {
       nodeTypes.push(NodeType.define({ id, name: name || undefined }));
     }
 
+    // for fields + textMatches, register pseudonode types. Maybe also
+    // convert the input maps into arrays for more efficient lookups?
+
     log.debug(`defined node types`, nodeTypes);
     const nodeSet = new NodeSet(nodeTypes).extend(...this.props);
 
+    // TODO: move this helper class out to top-level
     return new (class ParseResult implements PartialParse {
       parsedPos: number;
       stoppedAt: null;
@@ -106,6 +133,23 @@ class Parser extends LezerParser {
         while ((descendant = queue.pop()) !== undefined) {
           cursor.gotoDescendant(descendant);
           const node = cursor.currentNode;
+
+          const pseudo = pseudoNodes[node.type] || {};
+          if (
+            cursor.currentFieldName &&
+            pseudo.fields?.includes(cursor.currentFieldName)
+          ) {
+            // insert a pseudonode for the field (between the parent and `node`)
+          }
+
+          if (pseudo.textMatches) {
+            const literalText = input.read(cursor.startIndex, cursor.endIndex);
+            if (pseudo.textMatches?.includes(literalText)) {
+              // insert a pseudonode for the matched thing. Are these always
+              // gonna be leaf nodes or do we need to pick a firstChild or something
+            }
+          }
+
           buffer.unshift(
             ...[
               node.typeId,
@@ -145,6 +189,60 @@ class Parser extends LezerParser {
   }
 }
 
+export interface PseudoNodes {
+  fields?: string[];
+  textMatches?: string[];
+}
+
+//#endregion
+
+//#region Nushell
+
+export async function nushellLanguage(): Promise<CMLanguage> {
+  await TSParser.init({
+    locateFile(scriptName: string, scriptDirectory: string) {
+      log.debug(`locating ${scriptDirectory}${scriptName}`);
+      if (scriptName === "web-tree-sitter.wasm") {
+        log.debug(`found ${JSON.stringify(treeSitterWasm())}`);
+        return treeSitterWasm().filepath;
+      }
+      return scriptName;
+    },
+  });
+
+  log.debug(`loading language: ${JSON.stringify(nushellWasm())}`);
+  const lang = await TSLanguage.load(nushellWasm().filepath);
+
+  // TODO: indent / fold props, etc?
+
+  log.debug(`applying style tag rules`, highlights);
+  const languageData = defineLanguageFacet({
+    commentTokens: { line: "#" },
+  });
+  const adapter = new TreeSitterAdapter(lang, [styleTags(highlights)]);
+  return new CMLanguage(languageData, adapter, [], "nushell");
+}
+
+export async function nushell(): Promise<LanguageSupport> {
+  return new LanguageSupport(await nushellLanguage());
+}
+
+//#endregion
+
+const log = {
+  enableDebug: false,
+
+  debug(...rest: any[]) {
+    if (this.enableDebug) {
+      console.log(...rest);
+    }
+  },
+
+  error(...rest: any[]) {
+    console.error(...rest);
+  },
+};
+
 // Dumb simple reformatter for parse trees, operates on s-expr strings so it
 // works for both types of tree, and doesn't try to be too clever
 function prettyPrintTree(s: string): string {
@@ -175,36 +273,4 @@ function prettyPrintTree(s: string): string {
   }
 
   return resultLines.join("\n");
-}
-
-export async function nushellLanguage(): Promise<CMLanguage> {
-  await TSParser.init({
-    locateFile(scriptName: string, scriptDirectory: string) {
-      log.debug(`locating ${scriptDirectory}${scriptName}`);
-      if (scriptName === "web-tree-sitter.wasm") {
-        log.debug(`found ${JSON.stringify(treeSitterWasm())}`);
-        return treeSitterWasm().filepath;
-      }
-      return scriptName;
-    },
-  });
-
-  log.debug(`loading language: ${JSON.stringify(nushellWasm())}`);
-  const lang = await TSLanguage.load(nushellWasm().filepath);
-
-  // TODO: indent / fold props, etc?
-
-  const languageData = defineLanguageFacet({
-    commentTokens: { line: "#" },
-  });
-
-  log.debug(`applying style tag rules`, highlights);
-  const parser = new Parser(lang, [styleTags(highlights)]);
-  log.debug(parser.props);
-
-  return new CMLanguage(languageData, parser, [], "nushell");
-}
-
-export async function nushell(): Promise<LanguageSupport> {
-  return new LanguageSupport(await nushellLanguage());
 }
