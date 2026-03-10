@@ -23,7 +23,7 @@ async function buildLib() {
   });
 }
 
-async function watch(serve: boolean) {
+async function demo({ build = false, serve = false, watch = false }) {
   await buildLib();
 
   const ctx = await esbuild.context({
@@ -40,6 +40,10 @@ async function watch(serve: boolean) {
     plugins: [watchHtml()],
   });
 
+  if (build) {
+    ctx.rebuild();
+  }
+
   if (serve) {
     const { hosts, port } = await ctx.serve({ servedir: "public" });
 
@@ -49,7 +53,11 @@ async function watch(serve: boolean) {
     }
   }
 
-  await ctx.watch();
+  if (watch) {
+    await ctx.watch();
+  } else {
+    ctx.dispose();
+  }
 }
 
 function watchHtml(): esbuild.Plugin {
@@ -89,10 +97,11 @@ function watchHtml(): esbuild.Plugin {
   };
 }
 
-if (process.argv.includes("serve")) {
-  watch(true);
-} else if (process.argv.includes("watch")) {
-  watch(false);
-} else {
-  buildLib();
+switch (process.argv[2]) {
+  case "serve":
+    demo({ serve: true });
+  case "watch":
+    demo({ watch: true });
+  default:
+    demo({ build: true });
 }
