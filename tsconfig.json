@@ -5,6 +5,10 @@
     "module": "es2022",
     "newLine": "lf",
     "moduleResolution": "node",
+    "noEmit": true,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "outDir": "dist",
   },
-  "include": ["src/**/*.ts", "demo/*.ts", "rollup.config.ts"],
+  "include": ["src/**/*.ts", "demo/*.ts", "esbuild.config.ts"],
 }

@@ -1,6 +1,11 @@
 import { EditorView, basicSetup } from "codemirror";
 import { nushell } from "../src";
 
+// Get esbuild to copy file, `require` prevents treeshaking. I wonder if
+// there's a better way to "cause side effects" somehow
+import html from "./index.html";
+if (html) console.log(html);
+
 async function bootstrap() {
   const tgt = document.getElementById("editor_target");
 

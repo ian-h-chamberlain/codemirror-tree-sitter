@@ -178,19 +178,14 @@ function prettyPrintTree(s: string): string {
 }
 
 export async function nushellLanguage(): Promise<CMLanguage> {
+  // NOTE: does this library node-incompatible? can we loader this
   await TSParser.init({
-    locateFile(scriptName: string, scriptDirectory: string) {
-      log.debug(`locating ${scriptDirectory}${scriptName}`);
-      if (scriptName === "web-tree-sitter.wasm") {
-        log.debug(`found ${JSON.stringify(treeSitterWasm())}`);
-        return treeSitterWasm().filepath;
-      }
-      return scriptName;
-    },
+    locateFile: () => treeSitterWasm,
   });
 
-  log.debug(`loading language: ${JSON.stringify(nushellWasm())}`);
-  const lang = await TSLanguage.load(nushellWasm().filepath);
+  log.debug(`loading language: ${JSON.stringify(nushellWasm)}`);
+  const response = await fetch(nushellWasm);
+  const lang = await TSLanguage.load(await response.bytes());
 
   // TODO: indent / fold props, etc?
 

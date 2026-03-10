@@ -1,10 +1,10 @@
-// See rollup config for implementation
+// See esbuild config for details
 declare module "*.wasm" {
-  function load(): {
-    sync: boolean;
-    filepath: string;
-    src?: unknown;
-    imports?: unknown;
-  };
+  const filepath: string;
+  export default filepath;
+}
+
+declare module "*.html" {
+  function load(): void;
   export default load;
 }
