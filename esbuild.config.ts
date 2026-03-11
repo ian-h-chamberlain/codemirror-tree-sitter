@@ -53,10 +53,10 @@ async function demo({ build = false, serve = false, watch = false }) {
     }
   }
 
-  if (watch) {
+  if (watch || serve) {
     await ctx.watch();
   } else {
-    ctx.dispose();
+    await ctx.dispose();
   }
 }
 
