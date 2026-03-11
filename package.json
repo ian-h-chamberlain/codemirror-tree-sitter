@@ -19,7 +19,10 @@
     "import": "./dist/index.js"
   },
   "types": "dist/index.d.ts",
-  "sideEffects": false,
+  "sideEffects": [
+    "*.html",
+    "./esbuild.config.ts"
+  ],
   "dependencies": {
     "@codemirror/language": "^6.0.0",
     "@lezer/highlight": "^1.0.0",

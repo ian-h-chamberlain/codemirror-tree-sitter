@@ -1,10 +1,11 @@
 import { EditorView, basicSetup } from "codemirror";
 import { nushell } from "../src";
 
-// Get esbuild to copy file, `require` prevents treeshaking. I wonder if
-// there's a better way to "cause side effects" somehow.
 import html from "./index.html";
-if (html) console.log(html);
+// This seems to be the minimum amount of code for esbuild not to treeshake
+// this import, which prevents live reload from working properly.
+const _unused = () => html;
+_unused();
 
 async function bootstrap() {
   const tgt = document.getElementById("editor_target");

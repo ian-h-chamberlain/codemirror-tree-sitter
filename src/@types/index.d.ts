@@ -5,6 +5,6 @@ declare module "*.wasm" {
 }
 
 declare module "*.html" {
-  function load(): void;
-  export default load;
+  const empty: undefined;
+  export default empty;
 }

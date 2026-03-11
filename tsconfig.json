@@ -3,6 +3,7 @@
     "strict": true,
     "target": "es2017",
     "module": "es2022",
+    "lib": ["ES2024.Promise", "DOM"],
     "newLine": "lf",
     "moduleResolution": "node",
     "noEmit": true,

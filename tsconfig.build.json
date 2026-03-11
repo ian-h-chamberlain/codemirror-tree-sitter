@@ -5,6 +5,7 @@
     "emitDeclarationOnly": true,
     "declaration": true,
     "outDir": "dist",
+    "lib": [],
   },
   "include": ["src/**/*"],
   "exclude": ["demo/**/*", "esbuild.config.ts"],
