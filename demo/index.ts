@@ -7,11 +7,14 @@ import html from "./index.html";
 const _unused = () => html;
 _unused();
 
+// Hack to let esbuild watch its own config
+import "./esbuild.config";
+
 async function bootstrap() {
   const tgt = document.getElementById("editor_target");
 
   if (tgt === null) {
-    throw new Error("No target for editor!");
+    throw new Error("no target for editor!");
   }
 
   let editor = new EditorView({

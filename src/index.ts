@@ -21,9 +21,6 @@ import nushellWasm from "@lumis-sh/wasm-nushell/tree-sitter-nushell.wasm";
 
 import highlights from "./highlights";
 
-// Hack to let esbuild watch its own config
-import "./esbuild.config";
-
 const log = {
   enableDebug: true,
 

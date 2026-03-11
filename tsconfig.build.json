@@ -2,10 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "emitDeclarationOnly": true,
-    "declaration": true,
-    "outDir": "dist",
-    "lib": [],
+    // TBD: does this mean the library won't work as a node module?
+    "lib": ["DOM"],
   },
   "include": ["src/**/*"],
   "exclude": ["demo/**/*", "esbuild.config.ts"],
