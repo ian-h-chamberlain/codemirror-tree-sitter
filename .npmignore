@@ -1,6 +1,7 @@
 *
-!dist/*.js
-!dist/*.wasm
+# https://github.com/oven-sh/bun/issues/15602
+!dist
+!dist/*
 !package.json
 !README.md
 !LICENSE

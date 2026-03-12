@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "lib": ["DOM"], "noEmit": false },
+  "include": ["src/**/*"],
+  "exclude": ["demo/**/*", "esbuild.config.ts"],
+}

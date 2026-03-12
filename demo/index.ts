@@ -1,15 +1,6 @@
 import { EditorView, basicSetup } from "codemirror";
 import { nushell } from "../src";
 
-import html from "./index.html";
-// This seems to be the minimum amount of code for esbuild not to treeshake
-// this import, which prevents live reload from working properly.
-const _unused = () => html;
-_unused();
-
-// Hack to let esbuild watch its own config
-import "./esbuild.config";
-
 async function bootstrap() {
   const tgt = document.getElementById("editor_target");
 

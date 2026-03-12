@@ -2,14 +2,7 @@
 <html>
     <head>
         <title>Nushell CodeMirror Highlight Demo</title>
-        <script type="text/javascript">
-            // live reload from esbuild. Put here so any build/syntax errs
-            // in index.js don't cause problems
-            new EventSource("/esbuild").addEventListener("change", () =>
-                location.reload(),
-            );
-        </script>
-        <script defer type="text/javascript" src="./index.js"></script>
+        <script defer type="text/javascript" src="./index.ts"></script>
         <style>
             body {
                 font-family:
