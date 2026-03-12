@@ -13,9 +13,8 @@ WIP!
 This uses
 - A basic [CodeMirror 6](https://codemirror.net) editor
 - [tree-sitter-nu](https://github.com/nushell/tree-sitter-nu)
-  - prebuilt to WASM by [@lumis-sh](https://npmx.dev/package/@lumis-sh/wasm-nushell) because I'm lazy
 - a bit of glue code to convert tree-sitter types to [Lezer](https://lezer.codemirror.net/) types
-- pushed up onto GitHub pages
+- bundled together and pushed up to GitHub pages
 
 Note that you can't actually run any code with this, all the highlighting happens locally in your browser!
 

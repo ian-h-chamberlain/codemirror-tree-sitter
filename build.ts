@@ -23,6 +23,7 @@ async function main() {
       outdir: "dist",
       root: "src",
       naming: "[name].[ext]",
+      env: "NODE_*",
       ...config,
     },
     {

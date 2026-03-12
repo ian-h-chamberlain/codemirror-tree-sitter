@@ -10,6 +10,7 @@ const result = await bun.build({
 
 console.log(result);
 
+// TODO: would be nice to have a "production" server to run from
 const serve = bun.serve({
   development: { console: true },
   reusePort: true,

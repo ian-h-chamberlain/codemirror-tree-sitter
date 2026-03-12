@@ -17,12 +17,12 @@ import { styleTags, Tag } from "@lezer/highlight";
 import { Parser as TSParser, Language as TSLanguage } from "web-tree-sitter";
 
 import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
-import nushellWasm from "@lumis-sh/wasm-nushell/tree-sitter-nushell.wasm";
+import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm";
 
 import highlights from "./highlights";
 
 const log = {
-  enableDebug: true,
+  enableDebug: process.env.NODE_ENV !== "production",
 
   debug(...rest: any[]) {
     if (this.enableDebug) {

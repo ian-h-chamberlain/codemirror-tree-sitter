@@ -14,24 +14,16 @@ jobs:
       pages: write
       id-token: write
 
-    strategy:
-      matrix:
-        node-version: [22.x]
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
+      - name: Use Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Build
-        run: |
-          npm clean-install
-          npm pack
+      - run: bun ci
+      - run: bun dist
 
-      - name: Upload GitHub Pages artifact
+      - name: Upload pages archive
         uses: actions/upload-pages-artifact@v4.0.0
         with:
           path: public/
