@@ -1,47 +1,62 @@
 <!doctype html>
 <html>
-    <head>
-        <title>Nushell CodeMirror Highlight Demo</title>
-        <script defer type="text/javascript" src="./index.ts"></script>
-        <link href="./index.css" rel="stylesheet" />
-    </head>
+  <head>
+    <title>Nushell CodeMirror Highlight Demo</title>
+    <script defer type="text/javascript" src="./index.ts"></script>
+    <link href="./index.css" rel="stylesheet" />
+  </head>
 
-    <body>
-        <div class="row">
-            <div id="editor" class="column-left">
-                <div id="editor_target"></div>
-            </div>
+  <body>
+    <div class="row">
+      <div id="editor" class="column-left">
+        <div id="editor-target"></div>
+      </div>
 
-            <div class="column-right">
-                <h2>Nushell CodeMirror Highlight Demo</h2>
-                This uses
-                <ul>
-                    <li>
-                        A basic
-                        <a href="https://codemirror.net">CodeMirror 6</a> editor
-                    </li>
-                    <li>
-                        <a href="https://github.com/nushell/tree-sitter-nu"
-                            >tree-sitter-nu</a
-                        >
-                    </li>
-                    <li>
-                        a bit of glue code to convert tree-sitter types to
-                        <a href="https://lezer.codemirror.net/">Lezer</a> types
-                    </li>
-                    <li>bundled together and pushed up to GitHub pages</li>
-                </ul>
+      <div class="column-right">
+        <div class="content">
+          <h2>Nushell CodeMirror Highlight Demo</h2>
+          This uses
+          <ul>
+            <li>
+              A basic
+              <a href="https://codemirror.net">CodeMirror 6</a>
+              editor
+            </li>
+            <li>
+              <a href="https://github.com/nushell/tree-sitter-nu"
+                >tree-sitter-nu</a
+              >
+            </li>
+            <li>
+              a bit of glue code to convert tree-sitter types to
+              <a href="https://lezer.codemirror.net/">Lezer</a>
+              types
+            </li>
+            <li>bundled together and pushed up to GitHub pages</li>
+          </ul>
 
-                Note that you can't actually run anything here, all the
-                highlighting happens locally in your browser!
-                <br />
-                <br />
-                Check out the
-                <a
-                    href="https://github.com/ian-h-chamberlain/codemirror-lang-nushell"
-                    >source code</a
-                >.
-            </div>
+          Note that you can't actually run anything here, all the highlighting
+          happens locally in your browser!
+          <br />
+          <br />
+          Check out the
+          <a href="https://github.com/ian-h-chamberlain/codemirror-lang-nushell"
+            >source code</a
+          >.
         </div>
-    </body>
+
+        <hr />
+
+        <div class="settings">
+          <form id="settings">
+            <label for="settings-vim">Vim mode</label>
+            <input type="checkbox" name="vim" id="settings-vim" />
+
+            <label for="settings-theme">Theme</label>
+            <select name="theme" id="settings-theme"></select>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

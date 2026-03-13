@@ -1,6 +1,8 @@
 *.js
 *.map
+*.tar.gz
 *.tgz
+*.tsbuildinfo
 *.wasm
 /dist
 /node_modules

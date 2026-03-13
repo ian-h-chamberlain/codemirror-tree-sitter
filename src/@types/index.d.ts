@@ -9,3 +9,8 @@ declare module "*.html" {
   const empty: undefined;
   export default empty;
 }
+
+declare module "*.nu" {
+  const contents: string;
+  export default contents;
+}

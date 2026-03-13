@@ -1,6 +1,11 @@
 {
-  "extends": "./tsconfig.json",
-  "compilerOptions": { "lib": ["DOM"], "noEmit": false },
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["DOM"],
+    "noEmit": false,
+    "outDir": "dist",
+  },
   "include": ["src/**/*"],
   "exclude": ["demo/**/*", "esbuild.config.ts"],
 }

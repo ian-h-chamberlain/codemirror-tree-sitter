@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 import bun from "bun";
-import index from "../index.html";
+import index from "./index.html";
 
 const result = await bun.build({
   entrypoints: ["./demo/index.html"],
