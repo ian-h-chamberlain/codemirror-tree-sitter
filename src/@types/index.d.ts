@@ -1,5 +1,4 @@
 // Types provided by by bun bundler
-
 declare module "*.wasm" {
   const filepath: string;
   export default filepath;
@@ -8,9 +7,4 @@ declare module "*.wasm" {
 declare module "*.html" {
   const empty: undefined;
   export default empty;
-}
-
-declare module "*.nu" {
-  const contents: string;
-  export default contents;
 }

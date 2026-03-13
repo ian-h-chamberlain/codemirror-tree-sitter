@@ -22,7 +22,7 @@ import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm";
 import highlights from "./highlights";
 
 const log = {
-  enableDebug: process.env.NODE_ENV !== "production",
+  enableDebug: false, // process.env.NODE_ENV !== "production",
 
   debug(...rest: any[]) {
     if (this.enableDebug) {

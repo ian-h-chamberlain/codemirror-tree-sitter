@@ -8,6 +8,7 @@
     "clean-build": "bun clean && bun make",
     "clean-serve": "bun clean && bun serve",
     "dist": "bun pm pack",
+    "lint": "tsc --build",
     "make": "bun ./build",
     "postinstall": "cd node_modules/tree-sitter-nu && tree-sitter build --wasm || true",
     "prepack": "bun clean && NODE_ENV=production bun make",
@@ -24,8 +25,15 @@
     "demo/*"
   ],
   "dependencies": {
-    "@codemirror/language": "^6.0.0",
+    "@codemirror/commands": "^6.10.2",
+    "@codemirror/language": "^6.12.2",
+    "@codemirror/search": "^6.6.0",
+    "@codemirror/state": "^6.5.4",
+    "@codemirror/view": "^6.39.17",
+    "@fsegurai/codemirror-theme-monokai": "^6.2.3",
+    "@fsegurai/codemirror-theme-tokyo-night-day": "^6.2.3",
     "@lezer/highlight": "^1.0.0",
+    "@replit/codemirror-vim": "^6.3.0",
     "@types/bun": "^1.3.10",
     "web-tree-sitter": "^0.26.6"
   },
