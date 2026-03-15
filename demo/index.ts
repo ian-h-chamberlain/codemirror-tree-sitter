@@ -51,7 +51,7 @@ async function bootstrap() {
     parent: editorTarget,
     extensions: [
       basicSetup,
-      vimCfg.of([]),
+      vimCfg.of([vimKeymap({ status: true })]),
       themeCfg.of(THEMES.Dark),
       nushellExtension.of([]),
       bracketMatching(),
