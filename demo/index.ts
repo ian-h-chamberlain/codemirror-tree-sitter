@@ -65,6 +65,7 @@ async function bootstrap() {
       history(),
       indentOnInput(),
       lineNumbers(),
+      // TODO: hoverTooltip() for debugging?
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       keymap.of([
         ...defaultKeymap,

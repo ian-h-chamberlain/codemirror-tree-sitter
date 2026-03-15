@@ -9,6 +9,7 @@
     "moduleResolution": "bundler",
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
+    "noImplicitAny": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "sourceMap": true,
