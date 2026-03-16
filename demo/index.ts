@@ -2,6 +2,7 @@ import { defaultKeymap, historyKeymap, history } from "@codemirror/commands";
 import {
   bracketMatching,
   defaultHighlightStyle,
+  highlightingFor,
   indentOnInput,
   syntaxHighlighting,
 } from "@codemirror/language";
@@ -13,9 +14,12 @@ import {
   highlightActiveLine,
   highlightActiveLineGutter,
   highlightSpecialChars,
+  hoverTooltip,
+  HoverTooltipSource,
   KeyBinding,
   keymap,
   lineNumbers,
+  Tooltip,
 } from "@codemirror/view";
 import { monokai } from "@fsegurai/codemirror-theme-monokai";
 import { tokyoNightDay } from "@fsegurai/codemirror-theme-tokyo-night-day";
@@ -25,6 +29,7 @@ import { Compartment, EditorState, Extension } from "@codemirror/state";
 
 import { nushell } from "../src";
 import fibonacci from "./fibonacci.nu" with { type: "text" };
+import { styleTags } from "@lezer/highlight";
 
 const THEMES: {
   Dark: Extension;
@@ -65,7 +70,6 @@ async function bootstrap() {
       history(),
       indentOnInput(),
       lineNumbers(),
-      // TODO: hoverTooltip() for debugging?
       syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
       keymap.of([
         ...defaultKeymap,
@@ -112,10 +116,12 @@ async function bootstrap() {
     });
   });
 
+  const nu = await nushell({ debugTooltips: true });
+
   // Do this last after all the other (synchronous) setup so
   // that loading the wasm doesn't block rendering the editor
   editor.dispatch({
-    effects: nushellExtension.reconfigure([await nushell()]),
+    effects: nushellExtension.reconfigure([nu]),
   });
 }
 

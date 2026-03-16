@@ -2,6 +2,7 @@ import {
   Language as CMLanguage,
   defineLanguageFacet,
   LanguageSupport,
+  LRLanguage,
 } from "@codemirror/language";
 import {
   Input,
@@ -9,6 +10,7 @@ import {
   NodePropSource,
   NodeSet,
   NodeType,
+  Parser,
   PartialParse,
   Tree,
   TreeFragment,
@@ -20,6 +22,9 @@ import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
 import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm";
 
 import highlights from "./highlights";
+import { hoverTooltip, Tooltip, tooltips, TooltipView } from "@codemirror/view";
+import { parse } from "node:path/win32";
+import { Extension } from "@codemirror/state";
 
 //#region Adapter
 
@@ -89,6 +94,43 @@ export class TreeSitterAdapter extends LezerParser {
     const nodeSet = new NodeSet(nodeTypes).extend(...this.props);
 
     return new ParseResult(this.parser, input, pseudoNodes, nodeSet);
+  }
+
+  /**
+   * An editor extension which shows debug tooltips on hover, showing the names of
+   * Lezer nodes. This may be useful when writing `styleTags` for a tree-sitter grammar.
+   */
+  get debugTooltips(): Extension {
+    return hoverTooltip((view, pos): Tooltip | null => {
+      const parsedRange = this.startParse(
+        view.state.doc.toString(),
+        undefined,
+        [{ from: pos, to: pos + 1 }],
+      );
+
+      const tree = parsedRange.advance();
+      if (!tree) {
+        return null;
+      }
+
+      let iter = tree.resolveStack(pos, 1);
+      const dom = document.createElement("span");
+      dom.innerText = iter.node.name;
+      while (iter.next) {
+        // could make this max length configurable or something:
+        if (dom.innerText.length > 32) {
+          dom.innerText = "…/" + dom.innerText;
+          break;
+        }
+        iter = iter.next;
+        dom.innerText = iter.node.name + "/" + dom.innerText;
+      }
+      if (!iter.next) {
+        dom.innerText = "/" + dom.innerText;
+      }
+
+      return { pos, create: (): TooltipView => ({ dom }) };
+    });
   }
 }
 
@@ -219,8 +261,15 @@ export async function nushellLanguage(): Promise<CMLanguage> {
   return new CMLanguage(languageData, parser, [], "nushell");
 }
 
-export async function nushell(): Promise<LanguageSupport> {
-  return new LanguageSupport(await nushellLanguage());
+export async function nushell({
+  debugTooltips = false,
+} = {}): Promise<LanguageSupport> {
+  const lang = await nushellLanguage();
+  const parser = lang.parser as TreeSitterAdapter;
+
+  return new LanguageSupport(lang, {
+    extension: debugTooltips ? [parser.debugTooltips] : [],
+  });
 }
 
 //#endregion
