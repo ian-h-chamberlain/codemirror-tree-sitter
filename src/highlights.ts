@@ -1,5 +1,8 @@
 import { tags as t } from "@lezer/highlight";
 
+import { PseudoNodeOptions } from ".";
+import builtins from "./builtins";
+
 // helper for tag selectors corresponding to TS (parent [child1 child2] @bar)
 function anyChild(parent: string, children: string[]): string {
   return children
@@ -15,9 +18,32 @@ function escape(s: string): string {
   return s;
 }
 
+// helper for command names
+function anyCommand(...names: string[]): string {
+  return names
+    .map((name) => "command/head:/cmd_identifier/`" + name + "`")
+    .join(" ");
+}
+
+export const pseudonodes: { [node: string]: PseudoNodeOptions } = {
+  val_duration: { fields: ["unit"] },
+  expr_binary: { fields: ["opr"] },
+  where_command: { textMatches: ["where"] },
+  where_predicate: { fields: ["opr"] },
+
+  // NOTE: upstream is more generic with just `key: (identifier)`
+  record_entry: { fields: ["key"] },
+  collection_type: { fields: ["key"] },
+
+  cmd_identifier: { textMatches: builtins },
+  command: {
+    fields: ["head", "flag", "arg", "arg_str"],
+  },
+};
+
 // Based roughly on upstream tree-sitter-nu highlights.scm
 // TBD if creating any new tags/modifiers to match the upstream is worth it at all
-export default {
+export const highlights = {
   "let mut const def": t.definitionKeyword,
   "if else match loop while try catch finally error": t.controlKeyword,
   "module use": t.moduleKeyword,
@@ -46,9 +72,10 @@ export default {
 
   "raw_string_begin raw_string_end": t.special(t.punctuation),
 
-  // TODO: needs to capture operator only, maybe with props
-  // "expr_binary": t.operator,
-  // "where_predicate": t.operator,
+  // It seems that * is not allowed as the final component, but luckily
+  // these are atoms anyway so it's equivalent.
+  "expr_binary/opr:/...": t.operator,
+  "where_predicate/opr:/...": t.operator,
 
   [anyChild("assignment", ["=", "+=", "-=", "*=", "/=", "++="])]: t.operator,
   [anyChild("expr_unary", ["not", "-"])]: t.operator,
@@ -79,11 +106,10 @@ export default {
   '[ ] "...["': t.squareBracket,
   '{ } "...{"': t.brace,
 
-  // TODO:
-  // key: (identifier)
-  // (param_rest name: (_))
-  // (param_opt name: (_))
-  // (parameter param_name: (_))
+  "key:/identifier": t.propertyName,
+
+  // Lezer doesn't seem to have specific 'parameter' type so many of those are omitted
+
   "param_completer/cmd_identifier": t.string,
   "param_long_flag/long_flag_identifier": t.attributeName,
   "param_short_flag/param_short_flag_identifier": t.attributeName,
@@ -92,14 +118,23 @@ export default {
   long_flag_identifier: t.attributeName,
 
   "scope_pattern/wild_card": t.function(t.variableName),
+
+  [anyCommand(...builtins)]: t.standard(t.function(t.variableName)),
+  [anyCommand(
+    "break",
+    "continue",
+    "return",
+    "do",
+    "source",
+    "source-env",
+    "hide",
+    "hide-env",
+  )]: t.controlKeyword,
+
+  [anyCommand("error")]: t.definitionKeyword,
+  [anyCommand("overlay")]: t.moduleKeyword,
+
   cmd_identifier: t.function(t.variableName),
-
-  // TODO: Skipping builtin command names for now, probably can generate a JSON file
-  // and import it or something like that
-
-  // TODO: match specific commands as keywords
-  // break, continue, return, do, source, source-env, hide, hide-env, overlay, error, as
-
   "command/^": t.punctuation,
 
   where: t.standard(t.function(t.variableName)),
@@ -124,7 +159,6 @@ export default {
   [anyChild("list_type", ["<", ">"])]: t.angleBracket,
 
   [anyChild("collection_type", ["record", "table"])]: t.typeName,
-  // TODO: collection_type/key
   [anyChild("collection_type", ["<", ">"])]: t.angleBracket,
   "collection_type/:": t.special(t.punctuation),
 
@@ -134,8 +168,5 @@ export default {
   "shebang/...": t.operatorKeyword, // is this right ?
 
   "comment/...": t.comment,
-  // TODO: "(comment) . (decl_def)": t.docComment,
   "parameter/comment/...": t.docComment,
-
-  // TODO: injected regex for find/parse etc?
 };

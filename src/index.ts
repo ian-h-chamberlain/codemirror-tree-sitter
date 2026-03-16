@@ -21,7 +21,7 @@ import { Parser as TSParser, Language as TSLanguage } from "web-tree-sitter";
 import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
 import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm";
 
-import highlights from "./highlights";
+import { pseudonodes, highlights } from "./highlights";
 import { hoverTooltip, Tooltip, tooltips, TooltipView } from "@codemirror/view";
 import { parse } from "node:path/win32";
 import { Extension } from "@codemirror/state";
@@ -29,7 +29,7 @@ import { Extension } from "@codemirror/state";
 //#region Adapter
 
 export class TreeSitterAdapter extends LezerParser {
-  parser: TSParser;
+  private parser: TSParser;
 
   // bleh, this is a super long docstring and I don't love it but wanted to write some notes;
   /**
@@ -67,7 +67,7 @@ export class TreeSitterAdapter extends LezerParser {
   constructor(
     language: TSLanguage,
     private props: NodePropSource[] = [],
-    private pseudoNodes: { [node: string]: PseudoNodes | undefined } = {},
+    private pseudonodes: { [node: string]: PseudoNodeOptions | undefined } = {},
   ) {
     super();
     this.parser = new TSParser();
@@ -79,21 +79,35 @@ export class TreeSitterAdapter extends LezerParser {
     _fragments: readonly TreeFragment[],
     _ranges: readonly { from: number; to: number }[],
   ): PartialParse {
-    const { parser, pseudoNodes } = this;
+    const { parser, pseudonodes: pseudoNodes } = this;
 
     const tsNodeTypes = parser.language?.types || [];
-    const nodeTypes = [];
+    const nodeTypes: NodeType[] = [];
     for (const [id, name] of tsNodeTypes.entries()) {
       nodeTypes.push(NodeType.define({ id, name: name || undefined }));
     }
 
-    // for fields + textMatches, register pseudonode types. Maybe also
-    // convert the input maps into arrays for more efficient lookups?
+    let pseudo: { [parent: string]: PseudoNodes } = {};
+    for (const [parent, cfg] of Object.entries(pseudoNodes || {})) {
+      pseudo[parent] = pseudo[parent] || { fields: {}, textMatches: {} };
+
+      for (const name of cfg?.fields || []) {
+        const id = nodeTypes.length;
+        pseudo[parent].fields[name] = id;
+        nodeTypes.push(NodeType.define({ id, name: name + ":" }));
+      }
+
+      for (const match of cfg?.textMatches || []) {
+        const id = nodeTypes.length;
+        pseudo[parent].textMatches[match] = id;
+        nodeTypes.push(NodeType.define({ id, name: "`" + match + "`" }));
+      }
+    }
 
     log.debug(`defined node types`, nodeTypes);
     const nodeSet = new NodeSet(nodeTypes).extend(...this.props);
 
-    return new ParseResult(this.parser, input, pseudoNodes, nodeSet);
+    return new ParseResult(this.parser, input, nodeSet, pseudo);
   }
 
   /**
@@ -138,8 +152,8 @@ class ParseResult implements PartialParse {
   constructor(
     private parser: TSParser,
     private input: Input,
-    private pseudoNodes: { [node: string]: PseudoNodes | undefined },
     private nodes: NodeSet,
+    private pseudonodes: { [node: string]: PseudoNodes },
     public parsedPos: number = 0,
     public stoppedAt: null = null,
   ) {}
@@ -169,44 +183,78 @@ class ParseResult implements PartialParse {
     const buffer: number[] = [];
 
     const cursor = tsTree.walk();
-    const queue = [cursor.currentDescendantIndex];
+    const queue: { index: number; parent?: string }[] = [
+      { index: cursor.currentDescendantIndex },
+    ];
+
+    const pseudonodes = [];
 
     // post-order traversal as specified by Tree.build
     let descendant;
     while ((descendant = queue.pop()) !== undefined) {
-      cursor.gotoDescendant(descendant);
+      cursor.gotoDescendant(descendant.index);
       const node = cursor.currentNode;
 
-      const pseudo = this.pseudoNodes[node.type] || {};
+      const parentPseudo = this.pseudonodes[descendant.parent || ""];
+      let id;
       if (
-        cursor.currentFieldName &&
-        pseudo.fields?.includes(cursor.currentFieldName)
+        (id = parentPseudo?.fields[cursor.currentFieldName || ""]) !== undefined
       ) {
-        // insert a pseudonode for the field (between the parent and `node`)
+        insertNode(
+          buffer,
+          {
+            typeId: id,
+            startIndex: node.startIndex,
+            endIndex: node.endIndex,
+            descendantCount: node.descendantCount + 1,
+          },
+          true,
+        );
       }
 
-      if (pseudo.textMatches) {
-        const literalText = this.input.read(cursor.startIndex, cursor.endIndex);
-        if (pseudo.textMatches?.includes(literalText)) {
-          // insert a pseudonode for the matched thing. Are these always
-          // gonna be leaf nodes or do we need to pick a firstChild or something
-        }
+      insertNode(buffer, node);
+
+      const pseudo = this.pseudonodes[node.type];
+      const literalText = this.input.read(cursor.startIndex, cursor.endIndex);
+      if ((id = pseudo?.textMatches[literalText]) !== undefined) {
+        // set the real node as an ancestor
+        buffer[3]! += 4;
+
+        insertNode(
+          buffer,
+          {
+            typeId: id,
+            startIndex: node.startIndex,
+            endIndex: node.endIndex,
+            descendantCount: node.descendantCount,
+          },
+          true,
+        );
       }
 
-      buffer.unshift(
-        ...[
-          node.typeId,
-          node.startIndex,
-          node.endIndex,
-          4 * node.descendantCount,
-        ],
-      );
-
+      // TODO(perf): might need to use field indices instead of names here
       if (cursor.gotoFirstChild()) {
-        queue.push(cursor.currentDescendantIndex);
+        queue.push({
+          index: cursor.currentDescendantIndex,
+          parent: node.type,
+        });
         while (cursor.gotoNextSibling()) {
-          queue.push(cursor.currentDescendantIndex);
+          queue.push({
+            index: cursor.currentDescendantIndex,
+            parent: node.type,
+          });
         }
+      }
+
+      if (log.enableDebug) {
+        const buf = [];
+        for (let i = 0; i < buffer.length; i += 4) {
+          const id = buffer[i]!;
+          const name = this.nodes.types[id]?.name;
+          buf.push({ name, desc: (buffer[i + 3] || 0) / 4 });
+        }
+
+        log.debug(buf);
       }
     }
 
@@ -230,9 +278,43 @@ class ParseResult implements PartialParse {
   }
 }
 
-export interface PseudoNodes {
+export interface PseudoNodeOptions {
   fields?: string[];
   textMatches?: string[];
+}
+
+interface PseudoNodes {
+  fields: { [name: string]: number };
+  textMatches: { [match: string]: number };
+}
+
+function insertNode(
+  buf: number[],
+  node: {
+    typeId: number;
+    startIndex: number;
+    endIndex: number;
+    descendantCount: number;
+  },
+  updateAncestors: boolean = false,
+) {
+  buf.unshift(
+    node.typeId,
+    node.startIndex,
+    node.endIndex,
+    4 * node.descendantCount,
+  );
+
+  if (updateAncestors) {
+    for (let i = 1; i < buf.length / 4; i++) {
+      const offset = 4 * i + 3;
+      const descendantCount = (buf[offset] || 0) / 4 - 1;
+      const isAncestor = descendantCount >= i;
+      if (isAncestor) {
+        buf[offset]! += 4;
+      }
+    }
+  }
 }
 
 //#endregion
@@ -255,8 +337,12 @@ export async function nushellLanguage(): Promise<CMLanguage> {
     commentTokens: { line: "#" },
   });
 
-  log.debug(`applying style tag rules`, highlights);
-  const parser = new TreeSitterAdapter(lang, [styleTags(highlights)]);
+  log.debug(`applying style tag rules`, highlights, pseudonodes);
+  const parser = new TreeSitterAdapter(
+    lang,
+    [styleTags(highlights)],
+    pseudonodes,
+  );
 
   return new CMLanguage(languageData, parser, [], "nushell");
 }

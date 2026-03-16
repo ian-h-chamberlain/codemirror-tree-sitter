@@ -78,7 +78,6 @@ async function bootstrap() {
       ] as KeyBinding[]),
     ],
   });
-  console.log("built editor");
 
   const themeSelector = document.getElementById(
     "settings-theme",

@@ -1,8 +1,8 @@
 #!/usr/bin/env nu
 
 # Generate the fibonacci sequence
-@example "basic" { fib 5 } --result [0, 1, 1, 2, 3, 5]
- def fibonacci [
+@example "basic" { fibonacci 5 } --result [0, 1, 1, 2, 3, 5]
+def fibonacci [
     n: int # How many numbers to generate.
 ]: nothing -> list<int> {
     mut a = 0

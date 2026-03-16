@@ -12,7 +12,7 @@
     "make": "bun ./build",
     "postinstall": "cd node_modules/tree-sitter-nu && tree-sitter build --wasm || true",
     "prepack": "bun clean && NODE_ENV=production bun make",
-    "serve": "bun make && bun ./demo/index.html",
+    "serve": "bun make && bun --watch ./demo/index.html",
     "test": "bun make && mocha test/test.js"
   },
   "type": "module",
