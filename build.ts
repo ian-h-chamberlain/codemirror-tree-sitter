@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
 import { BuildConfig, BunPlugin, Glob, OnResolveResult, $ } from "bun";
-import { parseArgs } from "util";
-import fs from "node:fs/promises";
+import fs from "fs/promises";
+import path from "path";
 
 async function main() {
   // [bun, build.ts, _ ]
@@ -29,31 +29,34 @@ async function build() {
   const config: Partial<BuildConfig> = {
     external: ["module"],
     target: "browser",
+    format: "esm",
+    splitting: false,
   };
 
   const entrypoints: BuildConfig[] = [
     {
       // library
+      ...config,
       entrypoints: ["./src"],
-      outdir: "dist",
-      root: "src",
+      outdir: "./dist",
+      root: "./src",
       naming: "[name].[ext]",
       env: "NODE_*",
       sourcemap: true,
-      ...config,
     },
     {
       // demo
+      ...config,
       entrypoints: ["./demo/index.html"],
       outdir: "./public",
       minify: IS_PRODUCTION,
       sourcemap: !IS_PRODUCTION,
-      ...config,
+      plugins: [codemirrorPlugin],
     },
   ];
 
   for (const cfg of entrypoints) {
-    let out = await Bun.build(cfg);
+    const out = await Bun.build(cfg);
     if (out.success) {
       console.log(
         `Built ${cfg.entrypoints[0]} -> ${cfg.outdir}: ${out.outputs.length} outputs`,
@@ -70,10 +73,33 @@ async function clean() {
   await Promise.all([
     fs.rm("./dist", { recursive: true, force: true }),
     fs.rm("./public", { recursive: true, force: true }),
-    tarballs.then((paths) => paths.map(async (p) => await fs.rm)),
+    tarballs.then((paths) => paths.map(async (p) => await fs.rm(p))),
   ]);
   console.log("Cleaned up outputs");
 }
+
+// Seems to be enough to work around some issues like:
+// - https://github.com/uiwjs/react-codemirror/issues/707#issuecomment-2630203529
+// - https://github.com/oven-sh/bun/issues/26901
+const codemirrorPlugin: BunPlugin = {
+  name: "codemirror-cjs",
+  setup: (build) => {
+    build.onResolve({ filter: /^@?codemirror/ }, async (args) => {
+      const pkgdir = path.resolve("node_modules", args.path);
+      const packageJson = JSON.parse(
+        await fs.readFile(path.resolve(pkgdir, "package.json"), {
+          encoding: "utf-8",
+        }),
+      );
+      return {
+        path: path.resolve(
+          pkgdir,
+          packageJson.exports.require || packageJson.main,
+        ),
+      };
+    });
+  },
+};
 
 // A simple plugin for use with the devserver, workaround for the lack of 'external'
 // in the serve API

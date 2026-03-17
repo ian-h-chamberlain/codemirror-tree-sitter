@@ -2,7 +2,6 @@ import {
   Language as CMLanguage,
   defineLanguageFacet,
   LanguageSupport,
-  LRLanguage,
 } from "@codemirror/language";
 import {
   Input,
@@ -10,20 +9,18 @@ import {
   NodePropSource,
   NodeSet,
   NodeType,
-  Parser,
   PartialParse,
   Tree,
   TreeFragment,
 } from "@lezer/common";
-import { styleTags, Tag } from "@lezer/highlight";
+import { styleTags } from "@lezer/highlight";
 import { Parser as TSParser, Language as TSLanguage } from "web-tree-sitter";
 
-import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
-import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm";
+import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm" with { type: "file" };
+import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm" with { type: "file" };
 
 import { pseudonodes, highlights } from "./highlights";
-import { hoverTooltip, Tooltip, tooltips, TooltipView } from "@codemirror/view";
-import { parse } from "node:path/win32";
+import { hoverTooltip, Tooltip, TooltipView } from "@codemirror/view";
 import { Extension } from "@codemirror/state";
 
 //#region Adapter
@@ -87,7 +84,7 @@ export class TreeSitterAdapter extends LezerParser {
       nodeTypes.push(NodeType.define({ id, name: name || undefined }));
     }
 
-    let pseudo: { [parent: string]: PseudoNodes } = {};
+    const pseudo: { [parent: string]: PseudoNodes } = {};
     for (const [parent, cfg] of Object.entries(pseudoNodes || {})) {
       pseudo[parent] = pseudo[parent] || { fields: {}, textMatches: {} };
 
@@ -166,7 +163,7 @@ class ParseResult implements PartialParse {
       return null;
     }
 
-    const tsTree = this.parser.parse((index, position) =>
+    const tsTree = this.parser.parse((index, _position) =>
       this.input.chunk(index),
     );
     if (!tsTree) {
@@ -186,8 +183,6 @@ class ParseResult implements PartialParse {
     const queue: { index: number; parent?: string }[] = [
       { index: cursor.currentDescendantIndex },
     ];
-
-    const pseudonodes = [];
 
     // post-order traversal as specified by Tree.build
     let descendant;
@@ -363,13 +358,13 @@ export async function nushell({
 const log = {
   enableDebug: process.env.NODE_ENV !== "production",
 
-  debug(...rest: any[]) {
+  debug(...rest: unknown[]) {
     if (this.enableDebug) {
       console.log(...rest);
     }
   },
 
-  error(...rest: any[]) {
+  error(...rest: unknown[]) {
     console.error(...rest);
   },
 };
@@ -379,7 +374,7 @@ const log = {
 function prettyPrintTree(s: string): string {
   const tab = "  ";
   let indent = 0;
-  let resultLines: string[] = [];
+  const resultLines: string[] = [];
   let inStr = false;
 
   for (const c of s) {

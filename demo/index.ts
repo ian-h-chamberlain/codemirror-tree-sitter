@@ -2,7 +2,6 @@ import { defaultKeymap, historyKeymap, history } from "@codemirror/commands";
 import {
   bracketMatching,
   defaultHighlightStyle,
-  highlightingFor,
   indentOnInput,
   syntaxHighlighting,
 } from "@codemirror/language";
@@ -14,22 +13,18 @@ import {
   highlightActiveLine,
   highlightActiveLineGutter,
   highlightSpecialChars,
-  hoverTooltip,
-  HoverTooltipSource,
   KeyBinding,
   keymap,
   lineNumbers,
-  Tooltip,
 } from "@codemirror/view";
 import { monokai } from "@fsegurai/codemirror-theme-monokai";
 import { tokyoNightDay } from "@fsegurai/codemirror-theme-tokyo-night-day";
-import { basicSetup, EditorView } from "codemirror";
+import { EditorView } from "codemirror";
 import { vim as vimKeymap } from "@replit/codemirror-vim";
-import { Compartment, EditorState, Extension } from "@codemirror/state";
+import { Compartment, Extension } from "@codemirror/state";
 
 import { nushell } from "../src";
 import fibonacci from "./fibonacci.nu" with { type: "text" };
-import { styleTags } from "@lezer/highlight";
 
 const THEMES: {
   Dark: Extension;
@@ -55,7 +50,6 @@ async function bootstrap() {
     doc: fibonacci,
     parent: editorTarget,
     extensions: [
-      basicSetup,
       vimCfg.of([vimKeymap({ status: true })]),
       themeCfg.of(THEMES.Dark),
       nushellExtension.of([]),
@@ -93,7 +87,7 @@ async function bootstrap() {
       themeSelector.add(opt);
     }
   }
-  themeSelector.addEventListener("change", (event) => {
+  themeSelector.addEventListener("change", () => {
     const newTheme = THEMES[themeSelector.value];
     if (newTheme) {
       console.log("new theme:", themeSelector.value);
