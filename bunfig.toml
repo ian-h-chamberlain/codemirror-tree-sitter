@@ -1,2 +1,5 @@
+[install]
+linker = "hoisted" # temporary til I can figure out how to serve without
+
 [serve.static]
 plugins = ["./build.ts"]
