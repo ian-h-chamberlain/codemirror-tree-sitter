@@ -1,0 +1,9 @@
+{
+  "name": "codemirror-nushell-demo",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "codemirror-tree-sitter": "workspace:*",
+    "codemirror-lang-nushell": "workspace:*"
+  }
+}

@@ -4,6 +4,7 @@
 *.tgz
 *.tsbuildinfo
 *.wasm
-/dist
+.DS_Store
 /node_modules
-/public
+dist
+public

@@ -1,21 +1,12 @@
 {
+  "files": ["build.ts", "eslint.config.ts"],
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "declaration": true,
-    "emitDeclarationOnly": true,
-    "lib": ["ES2020", "DOM"],
-    "module": "Preserve",
-    "moduleDetection": "force",
-    "moduleResolution": "bundler",
     "noEmit": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
-    "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "ES2020",
   },
-  "include": ["src/**/*.ts", "demo/**/*.ts", "build.ts"],
-  "references": [{ "path": "./tsconfig.dist.json" }],
+  "references": [
+    { "path": "packages/adapter" },
+    { "path": "packages/demo" },
+    { "path": "packages/nushell" },
+  ],
 }

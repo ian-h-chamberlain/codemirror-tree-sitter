@@ -33,22 +33,34 @@ async function build() {
     splitting: false,
   };
 
+  const lib: Partial<BuildConfig> = {
+    ...config,
+    naming: "[name].[ext]",
+    env: "NODE_*",
+    sourcemap: true,
+  };
+
   const entrypoints: BuildConfig[] = [
     {
-      // library
-      ...config,
-      entrypoints: ["./src"],
-      outdir: "./dist",
-      root: "./src",
-      naming: "[name].[ext]",
-      env: "NODE_*",
-      sourcemap: true,
+      ...lib,
+      entrypoints: ["./packages/adapter/src/index.ts"],
+      outdir: "./packages/adapter/dist",
+      root: "./packages/adapter/src",
+      packages: "external",
+    },
+    {
+      // nushell
+      ...lib,
+      entrypoints: ["./packages/nushell/src/index.ts"],
+      outdir: "./packages/nushell/dist",
+      root: "./packages/nushell/src",
+      packages: "external",
     },
     {
       // demo
       ...config,
-      entrypoints: ["./demo/index.html"],
-      outdir: "./public",
+      entrypoints: ["./packages/demo/index.html"],
+      outdir: "./packages/demo/public",
       minify: IS_PRODUCTION,
       sourcemap: !IS_PRODUCTION,
       plugins: [CodeMirrorPlugin],
@@ -56,24 +68,26 @@ async function build() {
   ];
 
   for (const cfg of entrypoints) {
+    console.log(`Building '${cfg.entrypoints[0]}'...`);
     const out = await Bun.build(cfg);
-    if (out.success) {
-      console.log(
-        `Built ${cfg.entrypoints[0]} -> ${cfg.outdir}: ${out.outputs.length} outputs`,
-      );
-    } else {
-      console.log(`Failed to build ${cfg.entrypoints[0]}`);
-      throw new Error(JSON.stringify(out));
-    }
+    console.log(`Built -> '${cfg.outdir}': ${out.outputs.length} outputs`);
   }
 }
 
 async function clean() {
-  const tarballs = Array.fromAsync(new Glob("*.{tgz,tar.gz}").scan());
+  const tarballs = Array.fromAsync(
+    new Glob("packages/*/*.{tgz,tar.gz}").scan(),
+  );
+  const dirs = Array.fromAsync(
+    new Glob("packages/*/{dist,public}").scan({ onlyFiles: false }),
+  );
   await Promise.all([
-    fs.rm("./dist", { recursive: true, force: true }),
-    fs.rm("./public", { recursive: true, force: true }),
-    tarballs.then((paths) => paths.map(async (p) => await fs.rm(p))),
+    dirs.then((paths) =>
+      paths.map(async (p) => await fs.rm(p, { recursive: true, force: true })),
+    ),
+    tarballs.then((paths) =>
+      paths.map(async (p) => await fs.rm(p, { force: true })),
+    ),
   ]);
   console.log("Cleaned up outputs");
 }
@@ -84,19 +98,24 @@ async function clean() {
 const CodeMirrorPlugin: BunPlugin = {
   name: "codemirror-cjs",
   setup: (build) => {
+    // this is hacky af, should use module.paths or something probably
+    const modulesDir = path.resolve(__dirname, "node_modules");
+
     build.onResolve({ filter: /^@?codemirror/ }, async (args) => {
-      const pkgdir = path.resolve("node_modules", args.path);
+      const pkgdir = path.resolve(modulesDir, args.path);
       const packageJson = JSON.parse(
         await fs.readFile(path.resolve(pkgdir, "package.json"), {
           encoding: "utf-8",
         }),
       );
-      return {
-        path: path.resolve(
-          pkgdir,
-          packageJson.exports.require || packageJson.main,
-        ),
-      };
+      const modpath = path.resolve(
+        pkgdir,
+        packageJson.exports?.require ||
+          packageJson.main ||
+          packageJson.exports?.import ||
+          packageJson.module,
+      );
+      return { path: modpath };
     });
   },
 };

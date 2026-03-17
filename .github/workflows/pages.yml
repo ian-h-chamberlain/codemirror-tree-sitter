@@ -21,12 +21,12 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - run: bun ci
-      - run: bun dist
+      - run: bun --workspaces dist
 
       - name: Upload pages archive
         uses: actions/upload-pages-artifact@v4.0.0
         with:
-          path: public/
+          path: packages/demo/public/
 
       - name: Deploy to pages
         uses: actions/deploy-pages@v4.0.5

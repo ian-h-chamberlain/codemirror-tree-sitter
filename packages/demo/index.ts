@@ -23,7 +23,8 @@ import { EditorView } from "codemirror";
 import { vim as vimKeymap } from "@replit/codemirror-vim";
 import { Compartment, Extension } from "@codemirror/state";
 
-import { nushell } from "../src";
+import { nushell } from "codemirror-lang-nushell";
+
 import fibonacci from "./fibonacci.nu" with { type: "text" };
 
 const THEMES: {

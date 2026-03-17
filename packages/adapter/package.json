@@ -1,0 +1,24 @@
+{
+  "name": "codemirror-tree-sitter",
+  "version": "0.1.0",
+  "module": "dist/index.js",
+  "license": "MIT",
+  "description": "Nushell language support for CodeMirror",
+  "type": "module",
+  "exports": {
+    "import": "./dist/index.js"
+  },
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@codemirror/commands": "^6.10.2",
+    "@codemirror/language": "^6.12.2",
+    "@codemirror/search": "^6.6.0",
+    "@codemirror/state": "^6.5.4",
+    "@codemirror/view": "^6.39.17",
+    "web-tree-sitter": "^0.26.6",
+    "@lezer/highlight": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

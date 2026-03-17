@@ -1,0 +1,21 @@
+{
+  "name": "codemirror-lang-nushell",
+  "version": "0.1.0",
+  "module": "dist/index.js",
+  "license": "MIT",
+  "description": "Nushell language support for CodeMirror",
+  "scripts": {
+    "postinstall": "cd node_modules/tree-sitter-nu && [ -n tree-sitter-nu.wasm -o package.json -nt tree-sitter-nu.wasm ] && tree-sitter build --wasm || true"
+  },
+  "type": "module",
+  "exports": {
+    "import": "./dist/index.js"
+  },
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "codemirror-tree-sitter": "workspace:*"
+  },
+  "optionalDependencies": {
+    "tree-sitter-nu": "nushell/tree-sitter-nu"
+  }
+}

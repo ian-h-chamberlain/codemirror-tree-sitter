@@ -1,9 +1,4 @@
 import {
-  Language as CMLanguage,
-  defineLanguageFacet,
-  LanguageSupport,
-} from "@codemirror/language";
-import {
   Input,
   Parser as LezerParser,
   NodePropSource,
@@ -13,17 +8,10 @@ import {
   Tree,
   TreeFragment,
 } from "@lezer/common";
-import { styleTags } from "@lezer/highlight";
 import { Parser as TSParser, Language as TSLanguage } from "web-tree-sitter";
 
-import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm" with { type: "file" };
-import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm" with { type: "file" };
-
-import { pseudonodes, highlights } from "./highlights";
 import { hoverTooltip, Tooltip, TooltipView } from "@codemirror/view";
 import { Extension } from "@codemirror/state";
-
-//#region Adapter
 
 export class TreeSitterAdapter extends LezerParser {
   private parser: TSParser;
@@ -311,49 +299,6 @@ function insertNode(
     }
   }
 }
-
-//#endregion
-
-//#region Nushell
-
-export async function nushellLanguage(): Promise<CMLanguage> {
-  // NOTE: does this library node-incompatible? can we loader this
-  await TSParser.init({
-    locateFile: () => treeSitterWasm,
-  });
-
-  log.debug(`loading language: ${JSON.stringify(nushellWasm)}`);
-  const response = await fetch(nushellWasm);
-  const lang = await TSLanguage.load(await response.bytes());
-
-  // TODO: indent / fold props, etc?
-
-  const languageData = defineLanguageFacet({
-    commentTokens: { line: "#" },
-  });
-
-  log.debug(`applying style tag rules`, highlights, pseudonodes);
-  const parser = new TreeSitterAdapter(
-    lang,
-    [styleTags(highlights)],
-    pseudonodes,
-  );
-
-  return new CMLanguage(languageData, parser, [], "nushell");
-}
-
-export async function nushell({
-  debugTooltips = false,
-} = {}): Promise<LanguageSupport> {
-  const lang = await nushellLanguage();
-  const parser = lang.parser as TreeSitterAdapter;
-
-  return new LanguageSupport(lang, {
-    extension: debugTooltips ? [parser.debugTooltips] : [],
-  });
-}
-
-//#endregion
 
 const log = {
   enableDebug: process.env.NODE_ENV !== "production",

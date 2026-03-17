@@ -1,29 +1,8 @@
 import { tags as t } from "@lezer/highlight";
 
-import { PseudoNodeOptions } from ".";
+import type { PseudoNodeOptions } from "codemirror-tree-sitter";
+
 import builtins from "./builtins";
-
-// helper for tag selectors corresponding to TS (parent [child1 child2] @bar)
-function anyChild(parent: string, children: string[]): string {
-  return children
-    .map((child) => `${escape(parent)}/${escape(child)}`)
-    .join(" ");
-}
-
-// helper to escape a single tag selector
-function escape(s: string): string {
-  if (/[/!*".]/.test(s)) {
-    return JSON.stringify(s);
-  }
-  return s;
-}
-
-// helper for command names
-function anyCommand(...names: string[]): string {
-  return names
-    .map((name) => "command/head:/cmd_identifier/`" + name + "`")
-    .join(" ");
-}
 
 export const pseudonodes: { [node: string]: PseudoNodeOptions } = {
   val_duration: { fields: ["unit"] },
@@ -170,3 +149,25 @@ export const highlights = {
   "comment/...": t.comment,
   "parameter/comment/...": t.docComment,
 };
+
+// helper for tag selectors corresponding to TS (parent [child1 child2] @bar)
+function anyChild(parent: string, children: string[]): string {
+  return children
+    .map((child) => `${escape(parent)}/${escape(child)}`)
+    .join(" ");
+}
+
+// helper to escape a single tag selector
+function escape(s: string): string {
+  if (/[/!*".]/.test(s)) {
+    return JSON.stringify(s);
+  }
+  return s;
+}
+
+// helper for command names
+function anyCommand(...names: string[]): string {
+  return names
+    .map((name) => "command/head:/cmd_identifier/`" + name + "`")
+    .join(" ");
+}

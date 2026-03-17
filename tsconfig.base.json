@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
+    "composite": true,
     "declaration": true,
-    "declarationMap": true,
     "emitDeclarationOnly": true,
     "lib": ["ES2020", "DOM"],
     "module": "Preserve",
     "moduleDetection": "force",
     "moduleResolution": "bundler",
+    "noEmitOnError": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitAny": true,
