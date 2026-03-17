@@ -5,7 +5,7 @@
   "license": "MIT",
   "description": "Nushell language support for CodeMirror",
   "scripts": {
-    "postinstall": "cd node_modules/tree-sitter-nu && tree-sitter build --wasm"
+    "postinstall": "cd node_modules/tree-sitter-nu && bunx --no-install tree-sitter build --wasm"
   },
   "type": "module",
   "exports": {
@@ -13,7 +13,13 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@codemirror/language": "^6.12.2",
+    "@lezer/highlight": "^1.2.3",
     "codemirror-tree-sitter": "workspace:*",
-    "tree-sitter-nu": "nushell/tree-sitter-nu"
+    "tree-sitter-nu": "nushell/tree-sitter-nu",
+    "web-tree-sitter": "^0.26.7"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.26.6"
   }
 }

@@ -1,17 +1,16 @@
-import {
-  Input,
-  Parser as LezerParser,
-  NodePropSource,
-  NodeSet,
-  NodeType,
-  PartialParse,
-  Tree,
-  TreeFragment,
-} from "@lezer/common";
-import { Parser as TSParser, Language as TSLanguage } from "web-tree-sitter";
-
-import { hoverTooltip, Tooltip, TooltipView } from "@codemirror/view";
 import { Extension } from "@codemirror/state";
+import { hoverTooltip, Tooltip, TooltipView } from "@codemirror/view";
+import {
+    Input,
+    Parser as LezerParser,
+    NodePropSource,
+    NodeSet,
+    NodeType,
+    PartialParse,
+    Tree,
+    TreeFragment,
+} from "@lezer/common";
+import { Language as TSLanguage, Parser as TSParser } from "web-tree-sitter";
 
 export class TreeSitterAdapter extends LezerParser {
   private parser: TSParser;

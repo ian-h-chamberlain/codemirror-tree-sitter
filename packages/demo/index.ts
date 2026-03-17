@@ -1,27 +1,27 @@
-import { defaultKeymap, historyKeymap, history } from "@codemirror/commands";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
-  bracketMatching,
-  defaultHighlightStyle,
-  indentOnInput,
-  syntaxHighlighting,
+    bracketMatching,
+    defaultHighlightStyle,
+    indentOnInput,
+    syntaxHighlighting,
 } from "@codemirror/language";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+import { Compartment, Extension } from "@codemirror/state";
 import {
-  crosshairCursor,
-  drawSelection,
-  dropCursor,
-  highlightActiveLine,
-  highlightActiveLineGutter,
-  highlightSpecialChars,
-  KeyBinding,
-  keymap,
-  lineNumbers,
+    crosshairCursor,
+    drawSelection,
+    dropCursor,
+    EditorView,
+    highlightActiveLine,
+    highlightActiveLineGutter,
+    highlightSpecialChars,
+    KeyBinding,
+    keymap,
+    lineNumbers,
 } from "@codemirror/view";
 import { monokai } from "@fsegurai/codemirror-theme-monokai";
 import { tokyoNightDay } from "@fsegurai/codemirror-theme-tokyo-night-day";
-import { EditorView } from "codemirror";
 import { vim as vimKeymap } from "@replit/codemirror-vim";
-import { Compartment, Extension } from "@codemirror/state";
 
 import { nushell } from "codemirror-lang-nushell";
 

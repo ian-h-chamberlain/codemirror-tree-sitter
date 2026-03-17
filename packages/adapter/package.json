@@ -10,15 +10,9 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@codemirror/commands": "^6.10.2",
-    "@codemirror/language": "^6.12.2",
-    "@codemirror/search": "^6.6.0",
-    "@codemirror/state": "^6.5.4",
-    "@codemirror/view": "^6.39.17",
-    "web-tree-sitter": "^0.26.6",
-    "@lezer/highlight": "^1.0.0"
-  },
-  "devDependencies": {
-    "@types/bun": "latest"
+    "@codemirror/state": "^6.6.0",
+    "@codemirror/view": "^6.40.0",
+    "@lezer/common": "^1.5.1",
+    "web-tree-sitter": "^0.26.7"
   }
 }
