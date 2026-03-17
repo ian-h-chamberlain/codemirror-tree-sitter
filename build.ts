@@ -51,7 +51,7 @@ async function build() {
       outdir: "./public",
       minify: IS_PRODUCTION,
       sourcemap: !IS_PRODUCTION,
-      plugins: [codemirrorPlugin],
+      plugins: [CodeMirrorPlugin],
     },
   ];
 
@@ -81,7 +81,7 @@ async function clean() {
 // Seems to be enough to work around some issues like:
 // - https://github.com/uiwjs/react-codemirror/issues/707#issuecomment-2630203529
 // - https://github.com/oven-sh/bun/issues/26901
-const codemirrorPlugin: BunPlugin = {
+const CodeMirrorPlugin: BunPlugin = {
   name: "codemirror-cjs",
   setup: (build) => {
     build.onResolve({ filter: /^@?codemirror/ }, async (args) => {
@@ -103,9 +103,11 @@ const codemirrorPlugin: BunPlugin = {
 
 // A simple plugin for use with the devserver, workaround for the lack of 'external'
 // in the serve API
-const ExternalModulePlugin: BunPlugin = {
-  name: "external-module",
+const ServerPlugin: BunPlugin = {
+  name: "static-server",
   setup(build) {
+    // workaround for lack of multi-plugin handling
+    CodeMirrorPlugin.setup(build);
     build.onResolve(
       { filter: /^module$/ },
       async ({ path }): Promise<OnResolveResult> => ({ path, external: true }),
@@ -115,4 +117,4 @@ const ExternalModulePlugin: BunPlugin = {
 
 await main();
 
-export default ExternalModulePlugin;
+export default ServerPlugin;
