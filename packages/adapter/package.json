@@ -10,9 +10,9 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.40.0",
-    "@lezer/common": "^1.5.1",
-    "web-tree-sitter": "^0.26.7"
+    "@codemirror/state": "catalog:",
+    "@codemirror/view": "catalog:",
+    "@lezer/common": "catalog:",
+    "web-tree-sitter": "catalog:"
   }
 }

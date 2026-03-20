@@ -1,0 +1,31 @@
+diff --git a/package.json b/package.json
+index 10a2d81cf7a650fb819e33f345b6082c1a5b302c..283c1fe9c5b1ceb27aff7d92d71ed43687874491 100644
+--- a/package.json
++++ b/package.json
+@@ -24,12 +24,11 @@
+     "queries/*",
+     "src/**",
+     "*.wasm"
+   ],
+   "dependencies": {
+-    "node-addon-api": "^8.5.0",
+-    "node-gyp-build": "^4.8.4"
++    "tree-sitter-cli": "^0.25.10"
+   },
+   "devDependencies": {
+     "eslint": "^9.39.1",
+     "eslint-config-treesitter": "^1.0.2",
+     "prebuildify": "^6.0.1",
+@@ -42,11 +41,11 @@
+     "tree-sitter": {
+       "optional": true
+     }
+   },
+   "scripts": {
+-    "install": "node-gyp-build",
++    "install": "pwd && echo $PATH && tree .. && tree-sitter build --wasm",
+     "prestart": "tree-sitter build --wasm",
+     "start": "tree-sitter playground",
+     "test": "node --test bindings/node/*_test.js",
+     "lint": "eslint grammar.js",
+     "format": "eslint --fix grammar.js"

@@ -3,14 +3,14 @@
   "private": true,
   "license": "MIT",
   "dependencies": {
-    "@codemirror/commands": "^6.10.2",
-    "@codemirror/language": "^6.12.2",
-    "@codemirror/search": "^6.6.0",
-    "@codemirror/state": "^6.5.4",
-    "@codemirror/view": "^6.39.17",
-    "@fsegurai/codemirror-theme-monokai": "^6.2.3",
-    "@fsegurai/codemirror-theme-tokyo-night-day": "^6.2.3",
-    "@replit/codemirror-vim": "^6.3.0",
+    "@codemirror/commands": "catalog:",
+    "@codemirror/language": "catalog:",
+    "@codemirror/search": "catalog:",
+    "@codemirror/state": "catalog:",
+    "@codemirror/view": "catalog:",
+    "@fsegurai/codemirror-theme-monokai": "catalog:",
+    "@fsegurai/codemirror-theme-tokyo-night-day": "catalog:",
+    "@replit/codemirror-vim": "catalog:",
     "codemirror-lang-nushell": "workspace:*",
     "codemirror-tree-sitter": "workspace:*"
   }

@@ -20,9 +20,8 @@ jobs:
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
 
-      # https://github.com/oven-sh/bun/issues/19088
-      - run: bun install
-      - run: bun --workspaces dist
+      - run: bun ci --workspaces
+      - run: bun dist
 
       - name: Upload pages archive
         uses: actions/upload-pages-artifact@v4.0.0

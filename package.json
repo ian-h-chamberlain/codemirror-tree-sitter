@@ -12,16 +12,30 @@
     "lint": "tsc --build --declarationMap false && eslint",
     "make": "bun ./build",
     "make:clean": "bun clean && bun make",
-    "serve": "bun make && cd packages/demo && bun --watch ./index.html",
+    "serve": "bun make && bun --watch ./packages/demo/index.html",
     "serve:clean": "bun clean && bun serve",
     "test": "bun make && mocha test/test.js"
   },
-  "workspaces": [
-    "packages/*"
-  ],
-  "sideEffects": [
-    "demo/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "catalog": {
+      "@codemirror/commands": "^6.10.2",
+      "@codemirror/language": "^6.12.2",
+      "@codemirror/search": "^6.6.0",
+      "@codemirror/state": "^6.5.4",
+      "@codemirror/view": "^6.39.17",
+      "@fsegurai/codemirror-theme-monokai": "^6.2.3",
+      "@fsegurai/codemirror-theme-tokyo-night-day": "^6.2.3",
+      "@lezer/highlight": "^1.2.3",
+      "@lezer/common": "^1.5.1",
+      "@replit/codemirror-vim": "^6.3.0",
+      "tree-sitter-cli": "^0.26.6",
+      "tree-sitter-nu": "nushell/tree-sitter-nu",
+      "web-tree-sitter": "^0.26.7"
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/bun": "^1.3.10",
@@ -29,7 +43,15 @@
     "eslint": "^10.0.3",
     "globals": "^17.4.0",
     "jiti": "^2.6.1",
+    "tree-sitter-cli": "catalog:",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.57.1"
-  }
+  },
+  "patchedDependencies": {
+    "tree-sitter-nu@github:nushell/tree-sitter-nu#6f843cc": "patches/tree-sitter-nu@github:nushell%2Ftree-sitter-nu#6f843cc.patch"
+  },
+  "trustedDependencies": [
+    "tree-sitter-cli",
+    "tree-sitter-nu"
+  ]
 }

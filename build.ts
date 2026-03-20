@@ -5,7 +5,7 @@ import fs from "fs/promises";
 import path from "path";
 
 async function main() {
-  // [bun, build.ts, _ ]
+  // ['bun', './build', ... ]
   const args = Bun.argv.slice(2);
   if (args.length > 1) {
     throw Error("max one subcommand is supported");
@@ -40,37 +40,37 @@ async function build() {
     sourcemap: true,
   };
 
-  const entrypoints: BuildConfig[] = [
-    {
+  const entrypoints: { [cwd: string]: BuildConfig } = {
+    './packages/adapter': {
       ...lib,
-      entrypoints: ["./packages/adapter/src/index.ts"],
-      outdir: "./packages/adapter/dist",
-      root: "./packages/adapter/src",
+      entrypoints: ["./src/index.ts"],
+      outdir: "./dist",
+      root: "./src",
       packages: "external",
     },
-    {
-      // nushell
+    './packages/nushell': {
       ...lib,
-      entrypoints: ["./packages/nushell/src/index.ts"],
-      outdir: "./packages/nushell/dist",
-      root: "./packages/nushell/src",
+      entrypoints: ["./src/index.ts"],
+      outdir: "./dist",
+      root: "./src",
       packages: "external",
     },
-    {
-      // demo
+    './packages/demo': {
       ...config,
-      entrypoints: ["./packages/demo/index.html"],
-      outdir: "./packages/demo/public",
+      entrypoints: ["./index.html"],
+      outdir: "./public",
       minify: IS_PRODUCTION,
       sourcemap: !IS_PRODUCTION,
-      plugins: [CodeMirrorPlugin],
     },
-  ];
+  };
 
-  for (const cfg of entrypoints) {
+  for (const [cwd, cfg] of Object.entries(entrypoints)) {
     console.log(`Building '${cfg.entrypoints[0]}'...`);
+    const topDir = process.cwd();
+    process.chdir(path.resolve(cwd));
     const out = await Bun.build(cfg);
     console.log(`Built -> '${cfg.outdir}': ${out.outputs.length} outputs`);
+    process.chdir(topDir);
   }
 }
 
@@ -92,41 +92,11 @@ async function clean() {
   console.log("Cleaned up outputs");
 }
 
-// Seems to be enough to work around some issues like:
-// - https://github.com/uiwjs/react-codemirror/issues/707#issuecomment-2630203529
-// - https://github.com/oven-sh/bun/issues/26901
-const CodeMirrorPlugin: BunPlugin = {
-  name: "codemirror-cjs",
-  setup: (build) => {
-    // this is hacky af, should use module.paths or something probably
-    const modulesDir = path.resolve(__dirname, "node_modules");
-
-    build.onResolve({ filter: /^@?codemirror/ }, async (args) => {
-      const pkgdir = path.resolve(modulesDir, args.path);
-      const packageJson = JSON.parse(
-        await fs.readFile(path.resolve(pkgdir, "package.json"), {
-          encoding: "utf-8",
-        }),
-      );
-      const modpath = path.resolve(
-        pkgdir,
-        packageJson.exports?.require ||
-          packageJson.main ||
-          packageJson.exports?.import ||
-          packageJson.module,
-      );
-      return { path: modpath };
-    });
-  },
-};
-
 // A simple plugin for use with the devserver, workaround for the lack of 'external'
 // in the serve API
 const ServerPlugin: BunPlugin = {
   name: "static-server",
   setup(build) {
-    // workaround for lack of multi-plugin handling
-    CodeMirrorPlugin.setup(build);
     build.onResolve(
       { filter: /^module$/ },
       async ({ path }): Promise<OnResolveResult> => ({ path, external: true }),
