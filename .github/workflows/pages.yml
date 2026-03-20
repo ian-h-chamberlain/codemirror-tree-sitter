@@ -20,6 +20,10 @@ jobs:
       - name: Use Bun
         uses: oven-sh/setup-bun@v2
 
+      # Workaround for the fact that bun seems to use nondeterminstic install
+      # order / script order, sometimes resulting in missing tree-sitter binary
+      - run: bun install -g tree-sitter-cli
+
       - run: bun ci --workspaces
       - run: bun dist
 

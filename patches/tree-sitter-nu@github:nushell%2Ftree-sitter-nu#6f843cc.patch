@@ -1,8 +1,8 @@
 diff --git a/package.json b/package.json
-index 10a2d81cf7a650fb819e33f345b6082c1a5b302c..283c1fe9c5b1ceb27aff7d92d71ed43687874491 100644
+index 10a2d81cf7a650fb819e33f345b6082c1a5b302c..58caee816c7427856a624ecf375d5a5321a008f7 100644
 --- a/package.json
 +++ b/package.json
-@@ -24,12 +24,11 @@
+@@ -24,29 +24,27 @@
      "queries/*",
      "src/**",
      "*.wasm"
@@ -15,15 +15,21 @@ index 10a2d81cf7a650fb819e33f345b6082c1a5b302c..283c1fe9c5b1ceb27aff7d92d71ed436
    "devDependencies": {
      "eslint": "^9.39.1",
      "eslint-config-treesitter": "^1.0.2",
-     "prebuildify": "^6.0.1",
-@@ -42,11 +41,11 @@
+-    "prebuildify": "^6.0.1",
+-    "tree-sitter-cli": "^0.25.10"
++    "prebuildify": "^6.0.1"
+   },
+   "peerDependencies": {
+     "tree-sitter": "^0.25.0"
+   },
+   "peerDependenciesMeta": {
      "tree-sitter": {
        "optional": true
      }
    },
    "scripts": {
 -    "install": "node-gyp-build",
-+    "install": "pwd && echo $PATH && tree .. && tree-sitter build --wasm",
++    "install": "tree-sitter build --wasm",
      "prestart": "tree-sitter build --wasm",
      "start": "tree-sitter playground",
      "test": "node --test bindings/node/*_test.js",
