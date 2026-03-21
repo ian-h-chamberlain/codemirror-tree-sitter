@@ -1,12 +1,14 @@
 import {
-    Language as CMLanguage,
-    defineLanguageFacet,
-    LanguageSupport,
+  Language as CMLanguage,
+  defineLanguageFacet,
+  LanguageSupport,
 } from "@codemirror/language";
 import { styleTags } from "@lezer/highlight";
-import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm" with { type: "file" };
 import { Language as TSLanguage, Parser as TSParser } from "web-tree-sitter";
-import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm" with { type: "file" };
+
+// NOTE: there's custom bundling logic so these resolve as ./*.wasm to downstream users
+import nushellWasm from "tree-sitter-nu/tree-sitter-nu.wasm";
+import treeSitterWasm from "web-tree-sitter/web-tree-sitter.wasm";
 
 import { TreeSitterAdapter } from "codemirror-tree-sitter";
 

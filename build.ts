@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-import { BuildConfig, BunPlugin, Glob, OnResolveResult, $ } from "bun";
+import { $, BuildConfig, BunPlugin, Glob, OnResolveResult } from "bun";
 import fs from "fs/promises";
 import path from "path";
 
@@ -41,21 +41,56 @@ async function build() {
   };
 
   const entrypoints: { [cwd: string]: BuildConfig } = {
-    './packages/adapter': {
+    "./packages/adapter": {
       ...lib,
       entrypoints: ["./src/index.ts"],
       outdir: "./dist",
       root: "./src",
       packages: "external",
     },
-    './packages/nushell': {
+    "./packages/nushell": {
       ...lib,
       entrypoints: ["./src/index.ts"],
       outdir: "./dist",
       root: "./src",
       packages: "external",
+      target: "browser",
+      plugins: [
+        {
+          name: "copy-wasm",
+          setup: (build) => {
+            build.onResolve({ filter: /[.]wasm$/ }, (args) => {
+              if (args.path.startsWith("./")) {
+                return { path: args.path, external: true };
+              }
+              const resolved = path.resolve("node_modules", args.path);
+              return { path: resolved, namespace: "wasm" };
+            });
+
+            // bundle wasm and convert to an 'external' relative import, so downstream
+            // consumers will attempt to resolve from our dist dir
+            build.onLoad(
+              { filter: /[.]wasm$/, namespace: "wasm" },
+              async (args) => {
+                const name = path.basename(args.path);
+
+                const dest = path.resolve(build.config.outdir || "", name);
+                await fs.copyFile(args.path, dest);
+
+                return {
+                  loader: "ts",
+                  contents: `
+                    import wasm from "./${name}";
+                    export default wasm;
+                  `,
+                };
+              },
+            );
+          },
+        },
+      ],
     },
-    './packages/demo': {
+    "./packages/demo": {
       ...config,
       entrypoints: ["./index.html"],
       outdir: "./public",
@@ -65,11 +100,16 @@ async function build() {
   };
 
   for (const [cwd, cfg] of Object.entries(entrypoints)) {
-    console.log(`Building '${cfg.entrypoints[0]}'...`);
+    console.log(`Building '${path.join(cwd, cfg.entrypoints[0]!)}'...`);
     const topDir = process.cwd();
     process.chdir(path.resolve(cwd));
+
     const out = await Bun.build(cfg);
-    console.log(`Built -> '${cfg.outdir}': ${out.outputs.length} outputs`);
+    out.outputs[0];
+
+    console.log(
+      `Built -> '${path.join(cwd, cfg.outdir!)}': ${out.outputs.length} outputs`,
+    );
     process.chdir(topDir);
   }
 }
@@ -92,9 +132,8 @@ async function clean() {
   console.log("Cleaned up outputs");
 }
 
-// A simple plugin for use with the devserver, workaround for the lack of 'external'
-// in the serve API
-const ServerPlugin: BunPlugin = {
+// Entrypoint as plugin for the devserver, since Bun.serve() doesn't have `external`
+const plugin: BunPlugin = {
   name: "static-server",
   setup(build) {
     build.onResolve(
@@ -103,7 +142,7 @@ const ServerPlugin: BunPlugin = {
     );
   },
 };
+export default plugin;
 
+// Entrypoint when used as build script
 await main();
-
-export default ServerPlugin;

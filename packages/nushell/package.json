@@ -1,10 +1,10 @@
 {
   "name": "codemirror-lang-nushell",
   "version": "0.1.0",
-  "module": "dist/index.js",
   "license": "MIT",
   "description": "Nushell language support for CodeMirror",
   "type": "module",
+  "module": "dist/index.js",
   "exports": {
     "import": "./dist/index.js"
   },
