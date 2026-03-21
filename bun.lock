@@ -49,11 +49,13 @@
         "@codemirror/language": "catalog:",
         "@lezer/highlight": "catalog:",
         "codemirror-tree-sitter": "workspace:*",
-        "tree-sitter-nu": "catalog:",
         "web-tree-sitter": "catalog:",
       },
       "devDependencies": {
         "tree-sitter-cli": "catalog:",
+      },
+      "optionalDependencies": {
+        "tree-sitter-nu": "catalog:",
       },
     },
   },
@@ -76,7 +78,7 @@
     "@lezer/highlight": "^1.2.3",
     "@replit/codemirror-vim": "^6.3.0",
     "tree-sitter-cli": "^0.26.6",
-    "tree-sitter-nu": "nushell/tree-sitter-nu",
+    "tree-sitter-nu": "nushell/tree-sitter-nu#6f843cc",
     "web-tree-sitter": "^0.26.7",
   },
   "packages": {

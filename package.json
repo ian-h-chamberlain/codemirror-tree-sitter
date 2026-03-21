@@ -32,7 +32,7 @@
       "@lezer/common": "^1.5.1",
       "@replit/codemirror-vim": "^6.3.0",
       "tree-sitter-cli": "^0.26.6",
-      "tree-sitter-nu": "nushell/tree-sitter-nu",
+      "tree-sitter-nu": "nushell/tree-sitter-nu#6f843cc",
       "web-tree-sitter": "^0.26.7"
     }
   },
