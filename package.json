@@ -12,6 +12,7 @@
     "lint": "tsc --build --declarationMap false && eslint",
     "make": "bun ./build",
     "make:clean": "bun clean && bun make",
+    "make:samples": "nu packages/demo/code-samples/generate.nu",
     "serve": "bun make && bun --watch ./packages/demo/index.html",
     "serve:clean": "bun clean && bun serve",
     "test": "bun make && mocha test/test.js"

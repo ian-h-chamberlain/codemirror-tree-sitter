@@ -1,23 +1,23 @@
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import {
-    bracketMatching,
-    defaultHighlightStyle,
-    indentOnInput,
-    syntaxHighlighting,
+  bracketMatching,
+  defaultHighlightStyle,
+  indentOnInput,
+  syntaxHighlighting,
 } from "@codemirror/language";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { Compartment, Extension } from "@codemirror/state";
 import {
-    crosshairCursor,
-    drawSelection,
-    dropCursor,
-    EditorView,
-    highlightActiveLine,
-    highlightActiveLineGutter,
-    highlightSpecialChars,
-    KeyBinding,
-    keymap,
-    lineNumbers,
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  KeyBinding,
+  keymap,
+  lineNumbers,
 } from "@codemirror/view";
 import { monokai } from "@fsegurai/codemirror-theme-monokai";
 import { tokyoNightDay } from "@fsegurai/codemirror-theme-tokyo-night-day";
@@ -25,7 +25,9 @@ import { vim as vimKeymap } from "@replit/codemirror-vim";
 
 import { nushell } from "codemirror-lang-nushell";
 
-import fibonacci from "./fibonacci.nu" with { type: "text" };
+import darkCodeSample from "./code-samples/dark.html" with { type: "text" };
+import lightCodeSample from "./code-samples/light.html" with { type: "text" };
+import fibonacci from "./code-samples/fibonacci.nu" with { type: "text" };
 
 const THEMES: {
   Dark: Extension;
@@ -37,6 +39,11 @@ const THEMES: {
 };
 
 async function bootstrap() {
+  const codeSample = document.getElementById("code-sample");
+  if (codeSample) {
+    codeSample.innerHTML = darkCodeSample as unknown as string;
+  }
+
   const editorTarget = document.getElementById("editor-target");
 
   if (editorTarget === null) {
@@ -89,12 +96,26 @@ async function bootstrap() {
     }
   }
   themeSelector.addEventListener("change", () => {
+    // TODO: update the whole page's prefers-color-scheme, everything else should
+    // follow from that I think (rather than doing some custom thing)
+
     const newTheme = THEMES[themeSelector.value];
     if (newTheme) {
       console.log("new theme:", themeSelector.value);
       editor.dispatch({
         effects: themeCfg.reconfigure(newTheme),
       });
+
+      if (codeSample) {
+        switch (newTheme) {
+          case THEMES.Dark:
+            codeSample.innerHTML = darkCodeSample as unknown as string;
+            break;
+          case THEMES.Light:
+            codeSample.innerHTML = lightCodeSample as unknown as string;
+            break;
+        }
+      }
     }
   });
 
